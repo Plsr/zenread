@@ -1,19 +1,58 @@
-/**
- * v0 by Vercel.
- * @see https://v0.dev/t/8ZbeduSelvH
- */
-
 import { RssItemsList } from "@/components/blocks/RssItemsList";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { channels } from "@/lib/channels";
 import { ArrowPathIcon } from "@heroicons/react/16/solid";
-import Link from "next/link";
+import { XMLParser } from "fast-xml-parser";
+import { Link } from "lucide-react";
+import { notFound } from "next/navigation";
 
-const channelsById = {
-  1: "https://randsinrepose.com/feed/",
+type Props = {
+  params: {
+    id: string;
+    itemId: string;
+  };
 };
 
-export default function Component() {
+// TODO: Move to shared util
+const getFeedItems = async (feedLink: string) => {
+  const res = await fetch(feedLink);
+
+  if (res.status !== 200) {
+    return null;
+  }
+
+  const data = await res.text();
+  const parser = new XMLParser({});
+  const jsonData = parser.parse(data);
+  console.log(jsonData);
+
+  return jsonData?.rss?.channel?.item;
+};
+
+const getRSSItemAtPosition = async (feedLink: string, position: number) => {
+  const items = await getFeedItems(feedLink);
+
+  if (!items || items.length < 1) {
+    return null;
+  }
+
+  return items[position];
+};
+
+const ChannelIdPage = async ({ params }: Props) => {
+  const channelId = parseInt(params.id);
+  const itemId = parseInt(params.itemId);
+
+  const channelData = channels.find((channel) => channel.id === channelId);
+
+  if (!channelData) {
+    notFound();
+  }
+
+  const item = await getRSSItemAtPosition(channelData.link, itemId);
+  console.log(item);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr_1fr] gap-4 lg:gap-6 h-screen">
       <div className="flex flex-col h-full overflow-auto border-r dark:border-gray-800">
@@ -106,13 +145,14 @@ export default function Component() {
           <time className="block text-sm text-gray-500 dark:text-gray-400">
             January 10, 2024
           </time>
-          <p className="mt-2 text-sm">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-            ad minim veniam, quis nostrud exercitation ullamco laboris...
-          </p>
+          <p
+            className="mt-2 text-sm"
+            dangerouslySetInnerHTML={{ __html: item.description }}
+          />
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default ChannelIdPage;

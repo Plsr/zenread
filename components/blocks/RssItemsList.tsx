@@ -27,6 +27,7 @@ type RSSItem = {
 
 type Props = {
   feedLink: string;
+  channelId: number;
 };
 
 const getFeedItems = async (feedLink: string) => {
@@ -39,20 +40,21 @@ const getFeedItems = async (feedLink: string) => {
   const data = await res.text();
   const parser = new XMLParser({});
   const jsonData = parser.parse(data);
+  console.log(jsonData);
 
   return jsonData?.rss?.channel?.item;
 };
 
-export const RssItemsList = async ({ feedLink }: Props) => {
+export const RssItemsList = async ({ feedLink, channelId }: Props) => {
   const items = await getFeedItems(feedLink);
 
   return (
     <ul className="flex-1 overflow-auto divide-y divide-gray-200 dark:divide-gray-800">
-      {items.map((item: RSSItem) => (
+      {items.map((item: RSSItem, index: number) => (
         <li key={item.title}>
           <Link
             className="block p-4 hover:bg-gray-100 dark:hover:bg-gray-800"
-            href="#"
+            href={`channel/${channelId}/item/${index}`}
           >
             <h2 className="text-lg font-semibold">{he.decode(item.title)}</h2>
             {item.pubDate && (
