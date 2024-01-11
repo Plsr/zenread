@@ -3,6 +3,7 @@
  * @see https://v0.dev/t/8ZbeduSelvH
  */
 
+import { RssItemsList } from "@/components/blocks/RssItemsList";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowPathIcon } from "@heroicons/react/16/solid";
@@ -90,52 +91,7 @@ export default function Component() {
         </div>
       </div>
       <main className="flex flex-col h-full overflow-auto border-r dark:border-gray-800">
-        <ul className="flex-1 overflow-auto divide-y divide-gray-200 dark:divide-gray-800">
-          <li>
-            <Link
-              className="block p-4 hover:bg-gray-100 dark:hover:bg-gray-800"
-              href="#"
-            >
-              <h2 className="text-lg font-semibold">Article Title</h2>
-              <time className="block text-sm text-gray-500 dark:text-gray-400">
-                January 10, 2024
-              </time>
-              <p className="mt-2 text-sm">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit...
-              </p>
-            </Link>
-          </li>
-          <li>
-            <Link
-              className="block p-4 hover:bg-gray-100 dark:hover:bg-gray-800"
-              href="#"
-            >
-              <h2 className="text-lg font-semibold">Article Title</h2>
-              <time className="block text-sm text-gray-500 dark:text-gray-400">
-                January 9, 2024
-              </time>
-              <p className="mt-2 text-sm">
-                Sed do eiusmod tempor incididunt ut labore et dolore magna
-                aliqua...
-              </p>
-            </Link>
-          </li>
-          <li>
-            <Link
-              className="block p-4 hover:bg-gray-100 dark:hover:bg-gray-800"
-              href="#"
-            >
-              <h2 className="text-lg font-semibold">Article Title</h2>
-              <time className="block text-sm text-gray-500 dark:text-gray-400">
-                January 8, 2024
-              </time>
-              <p className="mt-2 text-sm">
-                Ut enim ad minim veniam, quis nostrud exercitation ullamco
-                laboris...
-              </p>
-            </Link>
-          </li>
-        </ul>
+        <RssItemsList feedLink="https://randsinrepose.com/feed/" />
       </main>
       <div className="flex flex-col h-full overflow-auto">
         <div className="flex-1 overflow-auto p-4">
