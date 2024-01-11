@@ -1,6 +1,7 @@
 import { XMLParser } from "fast-xml-parser";
 import Link from "next/link";
 import he from "he";
+import { format } from "date-fns";
 
 // TODO: Adapt so its consistent with the RSS 2.0 Specs
 // https://www.rssboard.org/rss-specification#hrelementsOfLtitemgt
@@ -44,7 +45,6 @@ const getFeedItems = async (feedLink: string) => {
 
 export const RssItemsList = async ({ feedLink }: Props) => {
   const items = await getFeedItems(feedLink);
-  console.log(items);
 
   return (
     <ul className="flex-1 overflow-auto divide-y divide-gray-200 dark:divide-gray-800">
@@ -57,12 +57,14 @@ export const RssItemsList = async ({ feedLink }: Props) => {
             <h2 className="text-lg font-semibold">{he.decode(item.title)}</h2>
             {item.pubDate && (
               <time className="block text-sm text-gray-500 dark:text-gray-400">
-                {item.pubDate}
+                {format(new Date(item.pubDate), "dd.MM.yyyy")}
               </time>
             )}
-            <p className="mt-2 text-sm">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit...
-            </p>
+            {item.description && (
+              <p className="mt-2 text-sm">
+                {he.decode(item.description.slice(0, 150))}...
+              </p>
+            )}
           </Link>
         </li>
       ))}
