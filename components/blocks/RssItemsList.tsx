@@ -1,5 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 import Link from "next/link";
+import he from "he";
 
 // TODO: Adapt so its consistent with the RSS 2.0 Specs
 // https://www.rssboard.org/rss-specification#hrelementsOfLtitemgt
@@ -35,7 +36,7 @@ const getFeedItems = async (feedLink: string) => {
   }
 
   const data = await res.text();
-  const parser = new XMLParser();
+  const parser = new XMLParser({});
   const jsonData = parser.parse(data);
 
   return jsonData?.rss?.channel?.item;
@@ -53,7 +54,7 @@ export const RssItemsList = async ({ feedLink }: Props) => {
             className="block p-4 hover:bg-gray-100 dark:hover:bg-gray-800"
             href="#"
           >
-            <h2 className="text-lg font-semibold">{item.title}</h2>
+            <h2 className="text-lg font-semibold">{he.decode(item.title)}</h2>
             {item.pubDate && (
               <time className="block text-sm text-gray-500 dark:text-gray-400">
                 {item.pubDate}
