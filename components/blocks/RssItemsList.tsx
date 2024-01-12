@@ -12,6 +12,7 @@ type RSSItem = {
   author?: string;
   category?: string[];
   comments?: string;
+  "content:encoded": string;
   enclosure?: {
     url: string;
     length: number;
@@ -54,7 +55,7 @@ export const RssItemsList = async ({ feedLink, channelId }: Props) => {
         <li key={item.title}>
           <Link
             className="block p-4 hover:bg-gray-100 dark:hover:bg-gray-800"
-            href={`channel/${channelId}/item/${index}`}
+            href={`/channel/${channelId}/item/${index}`}
           >
             <h2 className="text-lg font-semibold">{he.decode(item.title)}</h2>
             {item.pubDate && (
