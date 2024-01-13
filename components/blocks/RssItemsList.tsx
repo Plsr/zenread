@@ -2,6 +2,7 @@ import { XMLParser } from "fast-xml-parser";
 import Link from "next/link";
 import he from "he";
 import { format } from "date-fns";
+import { cache } from "react";
 
 // TODO: Adapt so its consistent with the RSS 2.0 Specs
 // https://www.rssboard.org/rss-specification#hrelementsOfLtitemgt
@@ -29,25 +30,31 @@ type RSSItem = {
 type Props = {
   feedLink: string;
   channelId: number;
+  feedItems?: RSSItem[];
 };
 
-const getFeedItems = async (feedLink: string) => {
-  const res = await fetch(feedLink);
+// const getFeedItems = cache(async (feedLink: string) => {
+//   const res = await fetch(feedLink);
+//   console.log("Fetching again");
 
-  if (res.status !== 200) {
-    return null;
-  }
+//   if (res.status !== 200) {
+//     return null;
+//   }
 
-  const data = await res.text();
-  const parser = new XMLParser({});
-  const jsonData = parser.parse(data);
-  console.log(jsonData);
+//   const data = await res.text();
+//   const parser = new XMLParser({});
+//   const jsonData = parser.parse(data);
 
-  return jsonData?.rss?.channel?.item;
-};
+//   return jsonData?.rss?.channel?.item;
+// });
 
-export const RssItemsList = async ({ feedLink, channelId }: Props) => {
-  const items = await getFeedItems(feedLink);
+export const RssItemsList = async ({
+  feedLink,
+  channelId,
+  feedItems,
+}: Props) => {
+  const items = feedItems!;
+  console.log("rerendering");
 
   return (
     <ul className="flex-1 overflow-auto divide-y divide-gray-200 dark:divide-gray-800">
