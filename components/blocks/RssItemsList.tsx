@@ -1,12 +1,15 @@
+"use client";
+
 import { XMLParser } from "fast-xml-parser";
 import Link from "next/link";
 import he from "he";
 import { format } from "date-fns";
-import { cache } from "react";
+import { cache, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 // TODO: Adapt so its consistent with the RSS 2.0 Specs
 // https://www.rssboard.org/rss-specification#hrelementsOfLtitemgt
-type RSSItem = {
+export type RSSItem = {
   title: string;
   link: string;
   description: string;
@@ -30,39 +33,59 @@ type RSSItem = {
 type Props = {
   feedLink: string;
   channelId: number;
-  feedItems?: RSSItem[];
+  feedItems: RSSItem[];
+  onItemClick: (itemId: number) => void;
 };
 
-// const getFeedItems = cache(async (feedLink: string) => {
-//   const res = await fetch(feedLink);
-//   console.log("Fetching again");
+const getFeedItems = cache(async (feedLink: string) => {
+  const res = await fetch(feedLink);
+  console.log("Fetching again");
 
-//   if (res.status !== 200) {
-//     return null;
-//   }
+  if (res.status !== 200) {
+    return null;
+  }
 
-//   const data = await res.text();
-//   const parser = new XMLParser({});
-//   const jsonData = parser.parse(data);
+  const data = await res.text();
+  const parser = new XMLParser({});
+  const jsonData = parser.parse(data);
 
-//   return jsonData?.rss?.channel?.item;
-// });
+  return jsonData?.rss?.channel?.item;
+});
 
-export const RssItemsList = async ({
+export const RssItemsList = ({
   feedLink,
   channelId,
   feedItems,
+  onItemClick,
 }: Props) => {
-  const items = feedItems!;
-  console.log("rerendering");
+  const listRef = useRef<HTMLUListElement>(null);
+  const [scrollOffset, setScrollOffset] = useState(0);
+  const router = useRouter();
+  const items = feedItems;
+  console.log(scrollOffset);
+
+  useEffect(() => {
+    if (!listRef.current) {
+      return;
+    }
+
+    listRef.current.scrollTo(0, scrollOffset);
+  }, [listRef, scrollOffset]);
+
+  const handleItemClick = (itemId: number) => {
+    onItemClick(itemId);
+  };
 
   return (
-    <ul className="flex-1 overflow-auto divide-y divide-gray-200 dark:divide-gray-800">
+    <ul
+      ref={listRef}
+      className="flex-1 overflow-auto divide-y divide-gray-200 dark:divide-gray-800"
+    >
       {items.map((item: RSSItem, index: number) => (
         <li key={item.title}>
-          <Link
+          <div
             className="block p-4 hover:bg-gray-100 dark:hover:bg-gray-800"
-            href={`/channel/${channelId}/item/${index}`}
+            onClick={() => handleItemClick(index)}
           >
             <h2 className="text-lg font-semibold">{he.decode(item.title)}</h2>
             {item.pubDate && (
@@ -75,7 +98,7 @@ export const RssItemsList = async ({
                 {he.decode(item.description.slice(0, 150))}...
               </p>
             )}
-          </Link>
+          </div>
         </li>
       ))}
     </ul>
