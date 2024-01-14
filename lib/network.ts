@@ -1,7 +1,6 @@
-import { RSSItem, RssItemsList } from "@/components/blocks/RssItemsList";
-import { channels } from "@/lib/channels";
+import { RSSItem } from "@/components/blocks/RssItemsList";
+import { channels } from "./channels";
 import { XMLParser } from "fast-xml-parser";
-import { ChannelsList } from "@/components/blocks/ChannelsList";
 
 export type RSSChannel = {
   title: string;
@@ -11,7 +10,7 @@ export type RSSChannel = {
   item: RSSItem[];
 };
 
-const getAllChannels = async () => {
+export const getAllChannels = async () => {
   const allChannelReqs = await channels.map(async (channel) => {
     return await fetch(channel.link);
   });
@@ -32,9 +31,3 @@ const getAllChannels = async () => {
 
   return (await Promise.all(successfulChannelRes)) as RSSChannel[];
 };
-
-export default async function Component() {
-  const channelData = await getAllChannels();
-
-  return <ChannelsList channelData={channelData} />;
-}
