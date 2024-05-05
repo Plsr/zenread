@@ -2,9 +2,8 @@ import { XMLParser } from "fast-xml-parser";
 import Link from "next/link";
 import he from "he";
 import { format } from "date-fns";
-import { cache, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { channels } from "@/lib/channels";
+import { cache } from "react";
+import { getChannels } from "@/lib/database";
 
 // TODO: Adapt so its consistent with the RSS 2.0 Specs
 // https://www.rssboard.org/rss-specification#hrelementsOfLtitemgt
@@ -45,11 +44,18 @@ const getFeedItems = cache(async (feedLink: string) => {
   const parser = new XMLParser({});
   const jsonData = parser.parse(data);
 
-  return jsonData?.rss?.channel?.item;
+  return jsonData?.rss?.channel?.item || jsonData?.feed?.entry;
 });
 
 export const RssItemsList = async ({ channelId }: Props) => {
-  const items = await getFeedItems(channels[channelId].link);
+  const channels = await getChannels();
+  const channel = channels.find((channel) => channel.id === channelId);
+
+  if (!channel) {
+    return null;
+  }
+
+  const items = await getFeedItems(channel.url);
 
   return (
     <ul className="flex-1 overflow-auto divide-y divide-gray-200 dark:divide-gray-800">

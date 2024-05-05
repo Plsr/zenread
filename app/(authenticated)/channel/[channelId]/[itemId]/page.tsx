@@ -1,9 +1,12 @@
 import { ItemContent } from "@/components/blocks/ItemContent";
 import { channels } from "@/lib/channels";
+import { getChannels } from "@/lib/database";
 import { getAllChannels } from "@/lib/network";
+import { normalizedRssFeed } from "@/lib/util/normalizeRssFeed";
 import { format } from "date-fns";
 import { XMLParser } from "fast-xml-parser";
 import he from "he";
+import { notFound } from "next/navigation";
 
 const getFeedItems = async (feedLink: string) => {
   const res = await fetch(feedLink);
@@ -17,7 +20,9 @@ const getFeedItems = async (feedLink: string) => {
   const parser = new XMLParser({});
   const jsonData = parser.parse(data);
 
-  return jsonData?.rss?.channel?.item;
+  const normalizedFeed = normalizedRssFeed(jsonData);
+
+  return normalizedFeed ? normalizedFeed.items : [];
 };
 
 export default async function Page({
@@ -25,8 +30,22 @@ export default async function Page({
 }: {
   params: { channelId: string; itemId: string };
 }) {
-  console.log(params);
-  const items = await getFeedItems(channels[parseInt(params.channelId)].link);
+  const channels = await getChannels();
+  const channel = channels.find(
+    (channel) => channel.id === parseInt(params.channelId)
+  );
+
+  if (!channel) {
+    console.error("Channel not found");
+    return notFound();
+  }
+
+  const items = await getFeedItems(channel?.url);
+
+  if (!items) {
+    return null;
+  }
+
   const item = items[parseInt(params.itemId)];
 
   return (
@@ -42,7 +61,7 @@ export default async function Page({
             </time>
           )}
         </div>
-        <ItemContent content={item["content:encoded"]} />
+        <ItemContent content={item.content} />
       </div>
     </div>
   );

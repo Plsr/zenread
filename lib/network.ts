@@ -1,18 +1,22 @@
 import { RSSItem } from "@/components/blocks/RssItemsList";
-import { channels } from "./channels";
 import { XMLParser } from "fast-xml-parser";
+import { getChannels } from "./database";
+import { normalizedRssFeed } from "./util/normalizeRssFeed";
 
-export type RSSChannel = {
+export type NormalizedRssChannel = {
   title: string;
-  link: string;
-  description: string;
-  lastBuildDate: string;
-  item: RSSItem[];
+  updatedAt: string; // .updated or .lastBuildDate
+  item: RSSItem[]; // TODO: Normalize
 };
 
 export const getAllChannels = async () => {
-  const allChannelReqs = await channels.map(async (channel) => {
-    return await fetch(channel.link);
+  const channels = await getChannels();
+
+  if (!channels) {
+    return [];
+  }
+  const allChannelReqs = channels.map(async (channel) => {
+    return await fetch(channel.url);
   });
 
   const channelRes = await Promise.allSettled(allChannelReqs);
@@ -26,8 +30,8 @@ export const getAllChannels = async () => {
     const parser = new XMLParser({});
     const jsonData = parser.parse(data);
 
-    return jsonData.rss.channel;
+    return normalizedRssFeed(jsonData);
   });
 
-  return (await Promise.all(successfulChannelRes)) as RSSChannel[];
+  return await Promise.all(successfulChannelRes);
 };
